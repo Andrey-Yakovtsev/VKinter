@@ -61,7 +61,7 @@ class User:
         params['count'] = 50  # 999
         params['has_photo'] = 1  # без фотки не выводятся
         params['fields'] = 'sex, bdate, city, country, relation, verified, first_name, last_name,  nickname, occupation,' \
-                           'home_town, interests, books, activities' \
+                           'interests, books, activities' \
                            'has_photo, common_count, is_friend'
         URL = 'https://api.vk.com/method/users.search'
         response = requests.get(URL, params)
@@ -70,13 +70,15 @@ class User:
 
         for user in response.json()['response']['items']:
             current_year = datetime.datetime.now()
-            if str(user.get('relation')) in proper_status:
-                if user.get('bdate'):
-                    if len(user.get('bdate').split('.')) == 3:
-                        user_bdate = user['bdate'].split('.')
-                        user_age = current_year.year - int(user_bdate[2])
-                        if user_age >= 18:
-                            search_result.append(user)  # ['id'])
+            if user.get('country'):
+                if user.get('city'):
+                    if str(user.get('relation')) in proper_status:
+                        if user.get('bdate'):
+                            if len(user.get('bdate').split('.')) == 3:
+                                user_bdate = user['bdate'].split('.')
+                                user_age = current_year.year - int(user_bdate[2])
+                                if user_age >= 18:
+                                    search_result.append(user)  # ['id'])
         print(f'Подходящий статус у {len(search_result)} результатов поиска. Берем 1-го из них')
         return search_result[0]  # можно впринципе пройтись разок поиском и все итоги убрать в базу
 
@@ -95,10 +97,10 @@ class User:
         for symbol in search_query:
             params = get_params()
             params['q'] = symbol
-            params['count'] = 50 #999
+            params['count'] = 100 #999
             params['has_photo'] = 1 # без фотки не выводятся
             params['fields'] = 'sex, bdate, city, country, relation, verified, first_name, last_name,  nickname, occupation,' \
-                           'home_town, interests, books, activities' \
+                           'interests, books, activities' \
                            'has_photo, common_count, is_friend'
 
             URL = 'https://api.vk.com/method/users.search'
@@ -162,20 +164,26 @@ class Matching:
         user_age = current_year.year - int(user_bdate[2])
         for candidate in search_result:
             # print(len(search_result))
-            candidate_age = current_year.year - int(candidate['bdate'].split('.')[2])
-            delta = abs(user_age - candidate_age)
-            if delta <=3:
-                candidate.update({'matching_age': 100})
-                # print('100%', candidate['first_name'], candidate)
-            if 4 <= delta <= 7:
-                candidate.update({'matching_age': 70})
-                # print('70%', candidate['first_name'], candidate)
-            if 8 <= delta <= 15:
-                candidate.update({'matching_age': 30})
-                # print('30%', candidate['first_name'], candidate)
-            if delta > 16:
-                candidate.update({'matching_age': 10})
-                # print('10%', candidate['first_name'], candidate)
+            if candidate.get('bdate'):
+                # print(candidate.get('bdate'))
+                candidate_age = current_year.year - int(candidate['bdate'].split('.')[2])
+                # print(candidate_age)
+                delta = abs(user_age - candidate_age)
+                if delta <=3:
+                    candidate.update({'matching_age': 100})
+                    # print('100%', candidate['first_name'], candidate)
+                if 4 <= delta <= 7:
+                    candidate.update({'matching_age': 70})
+                    # print('70%', candidate['first_name'], candidate)
+                if 8 <= delta <= 15:
+                    candidate.update({'matching_age': 30})
+                    # print('30%', candidate['first_name'], candidate)
+                if 16 <=delta <=100:
+                    candidate.update({'matching_age': 10})
+                    # print('10%', candidate['first_name'], candidate)
+            else:
+                print('Что-то из элса')
+                candidate.update({'matching_age': 0})
         return search_result
 
     def matching_location(self, user, search_result):
@@ -186,10 +194,15 @@ class Matching:
                 if candidate['country']['id'] != user_country:
                     candidate.update({'matching_location': 30})
                 else:
-                    if candidate['city']['id'] == user_city:
-                        candidate.update({'matching_location': 100})
+                    if candidate.get('city'):
+                        if candidate['city']['id'] == user_city:
+                            candidate.update({'matching_location': 100})
+                        else:
+                            candidate.update({'matching_location': 50})
                     else:
-                        candidate.update({'matching_location': 50})
+                        candidate.update({'matching_location': 30})
+            else:
+                candidate.update({'matching_location': 30})
         return search_result
 
     def friendship_relations(self, user, search_result):
@@ -202,12 +215,38 @@ class Matching:
                 candidate.update({'friendship_common': 50})
             if candidate['common_count'] == 0:
                 candidate.update({'friendship_common': 0})
+            else:
+                candidate.update({'friendship_common': 0})
+        return search_result
+
+    def interests_intersection(self, user, search_result):
+        user_interest_lookup_list = []
+        if user.get('interests'):
+            user_interests = user['interests'].split(', ')
+            for item in user_interests:
+                user_interest_lookup_list.append(item[:4])
+        for candidate in search_result:
+            if candidate.get('interests'):
+                candidate_interest_lookup_list = []
+                candidate_interests = candidate['interests'].split(', ')
+                for item in candidate_interests:
+                    candidate_interest_lookup_list.append(item[:4])
+                result = list(set(candidate_interest_lookup_list) & set(user_interest_lookup_list))
+                if len(result) != 0:
+                    candidate.update({'interest_common': 100})
+                else:
+                    candidate.update({'interest_common': 0})
+            else:
+                candidate.update({'interest_common': 0})
 
         return search_result
 
-target_user = User.search_user_by_name(token,'Семен Слепаков')
+
+
+
+target_user = User.search_user_by_name(token,'Фриске')
 print(target_user)
-search_list = 'фыва'
+search_list = 'фываолдж'
 global_search_result = User.relation_ready_global_user_search(token, search_list)
 print('Всего нашли ==>', len(global_search_result))
 # print(global_search_result)
@@ -216,10 +255,38 @@ filtered_sex = match.matching_sex(target_user, global_search_result)
 print('Отобрали по полу ==>', len(filtered_sex))
 
 filtered_age = match.matching_age_delta(target_user, filtered_sex)
-print(filtered_age)
+# print(filtered_age)
 
 matched_location = match.matching_location(target_user, filtered_age)
-print(matched_location)
+# print(matched_location)
 
 friendship_relavity = match.friendship_relations(target_user, matched_location)
-print(friendship_relavity)
+# print(friendship_relavity)
+
+interest_matching = match.interests_intersection(target_user, friendship_relavity)
+print(interest_matching)
+
+all_filters_result = interest_matching
+#
+# # def filter_top_10_results():
+all_ratings_list = []
+for candidate in all_filters_result:
+    rating = candidate['friendship_common'] + candidate['friendship'] + \
+             candidate['matching_location'] + candidate['matching_age']
+    candidate.update({'RATING': rating})
+    all_ratings_list.append(rating)
+
+top_points = max(set(all_ratings_list))
+
+for candidate in all_filters_result:
+    if candidate['RATING'] == top_points:
+        try:
+            print(
+                candidate['id'], candidate['first_name'], candidate['bdate'], candidate['country']['title'],
+                candidate['RATING'],
+                candidate['friendship_common'], candidate['friendship'],
+                candidate['matching_location'], candidate['matching_age'])
+        except KeyError as e:
+            print(e)
+
+# filter_top_10_results()

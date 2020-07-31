@@ -21,7 +21,6 @@ class Allopenedusers(Base):
     last_name = Column(String(20))
     nickname = Column(String(30))
     occupation = Column(JSONB, nullable=True)
-    home_town = Column(String(30))
     interests = Column(String(300))
     books  = Column(String(100))
     activities = Column(String(300))
