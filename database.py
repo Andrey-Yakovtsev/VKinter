@@ -14,13 +14,13 @@ class Allopenedusers(Base):
     id = Column(Integer, primary_key=True)
     sex = Column(Integer, nullable=False)
     bdate = Column(Date) # ПОЧИТАТЬ КАК ДАТУ ПЕРЕДАТЬ ПРАВИЛЬНО
-    city = Column(Integer, nullable=True) #  КАК ВЫДЕРНУТЬ ИЗ СЛОВАРЯ
-    country = Column(Integer, nullable=True) #  КАК ВЫДЕРНУТЬ ИЗ СЛОВАРЯ
+    city = Column(JSONB, nullable=True)
+    country = Column(JSONB, nullable=True)
     verified = Column(Integer)
     first_name = Column(String(20))
     last_name = Column(String(20))
     nickname = Column(String(30))
-    occupation = Column(Integer, nullable=True) #  КАК ВЫДЕРНУТЬ ИЗ СЛОВАРЯ
+    occupation = Column(JSONB, nullable=True)
     home_town = Column(String(30))
     interests = Column(String(300))
     books  = Column(String(100))

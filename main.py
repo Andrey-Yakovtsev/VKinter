@@ -95,7 +95,7 @@ class User:
         for symbol in search_query:
             params = get_params()
             params['q'] = symbol
-            params['count'] = 10 #999
+            params['count'] = 50 #999
             params['has_photo'] = 1 # без фотки не выводятся
             params['fields'] = 'sex, bdate, city, country, relation, verified, first_name, last_name,  nickname, occupation,' \
                            'home_town, interests, books, activities' \
@@ -161,33 +161,65 @@ class Matching:
         current_year = datetime.datetime.now()
         user_age = current_year.year - int(user_bdate[2])
         for candidate in search_result:
-            print(len(search_result))
+            # print(len(search_result))
             candidate_age = current_year.year - int(candidate['bdate'].split('.')[2])
             delta = abs(user_age - candidate_age)
             if delta <=3:
-                print('100%', candidate['first_name'], candidate)
+                candidate.update({'matching_age': 100})
+                # print('100%', candidate['first_name'], candidate)
             if 4 <= delta <= 7:
-                print('70%', candidate['first_name'], candidate)
+                candidate.update({'matching_age': 70})
+                # print('70%', candidate['first_name'], candidate)
             if 8 <= delta <= 15:
-                print('30%', candidate['first_name'], candidate)
+                candidate.update({'matching_age': 30})
+                # print('30%', candidate['first_name'], candidate)
             if delta > 16:
-                print('10%', candidate['first_name'], candidate)
+                candidate.update({'matching_age': 10})
+                # print('10%', candidate['first_name'], candidate)
+        return search_result
 
+    def matching_location(self, user, search_result):
+        user_country = user['country']['id']
+        user_city = user['city']['id']
+        for candidate in search_result:
+            if candidate.get('country'):
+                if candidate['country']['id'] != user_country:
+                    candidate.update({'matching_location': 30})
+                else:
+                    if candidate['city']['id'] == user_city:
+                        candidate.update({'matching_location': 100})
+                    else:
+                        candidate.update({'matching_location': 50})
+        return search_result
 
-    # def matching_location(self):
-    #     if str(user.get('city')) == city and not None:
-    #                 print(user.get('city'))
-    #     pass
+    def friendship_relations(self, user, search_result):
+        for candidate in search_result:
+            if candidate['is_friend'] == 0:
+                candidate.update({'friendship': 0})
+            if candidate['is_friend'] == 1:
+                candidate.update({'friendship': 100})
+            if candidate['common_count'] == 1:
+                candidate.update({'friendship_common': 50})
+            if candidate['common_count'] == 0:
+                candidate.update({'friendship_common': 0})
 
+        return search_result
 
-
-target_user = User.search_user_by_name(token,'Петр Петров')
+target_user = User.search_user_by_name(token,'Семен Слепаков')
 print(target_user)
 search_list = 'фыва'
 global_search_result = User.relation_ready_global_user_search(token, search_list)
-print('Всего нашли ==>',len(global_search_result))
+print('Всего нашли ==>', len(global_search_result))
 # print(global_search_result)
 match = Matching()
 filtered_sex = match.matching_sex(target_user, global_search_result)
 print('Отобрали по полу ==>', len(filtered_sex))
-match.matching_age_delta(target_user, filtered_sex)
+
+filtered_age = match.matching_age_delta(target_user, filtered_sex)
+print(filtered_age)
+
+matched_location = match.matching_location(target_user, filtered_age)
+print(matched_location)
+
+friendship_relavity = match.friendship_relations(target_user, matched_location)
+print(friendship_relavity)
