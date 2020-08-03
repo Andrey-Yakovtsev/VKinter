@@ -99,7 +99,7 @@ class User:
             params['q'] = symbol
             params['count'] = 999 #999
             params['has_photo'] = 1 # без фотки не выводятся
-            params['fields'] = 'sex, bdate, city, country, relation, verified, first_name, last_name,  nickname, occupation,' \
+            params['fields'] = 'sex, bdate, city, country, relation, domain, first_name, last_name,  nickname, occupation,' \
                            'interests, books, activities' \
                            'has_photo, common_count, is_friend'
 
@@ -137,10 +137,6 @@ class Matching:
     функции проверки параметров соответствия юзеров из полученной базы нашему юзеру
     Получают на вход юзера, выдают рейтинги соответствия каждого юзера выбранному
     '''
-    # matched_user = User.get_chosen_user_info(token)
-    # user_sex = matched_user['sex']
-    # user_bdate = matched_user['bdate'].split('.')
-    # city = matched_user['city']['title']
 
     def matching_sex(self, user, search_result):
         '''
@@ -154,7 +150,6 @@ class Matching:
         for candidate in search_result:
             if candidate['sex'] != user_sex: #выборка оп полу
                 sex_appropriate_candidates.append(candidate)
-        print(len(sex_appropriate_candidates))
         return sex_appropriate_candidates
 
     def matching_age_delta(self, user, search_result):
@@ -162,26 +157,18 @@ class Matching:
         current_year = datetime.datetime.now()
         user_age = current_year.year - int(user_bdate[2])
         for candidate in search_result:
-            # print(len(search_result))
             if candidate.get('bdate'):
-                # print(candidate.get('bdate'))
                 candidate_age = current_year.year - int(candidate['bdate'].split('.')[2])
-                # print(candidate_age)
                 delta = abs(user_age - candidate_age)
                 if delta <=3:
                     candidate.update({'matching_age': 100})
-                    # print('100%', candidate['first_name'], candidate)
                 if 4 <= delta <= 7:
                     candidate.update({'matching_age': 70})
-                    # print('70%', candidate['first_name'], candidate)
                 if 8 <= delta <= 15:
                     candidate.update({'matching_age': 30})
-                    # print('30%', candidate['first_name'], candidate)
                 if 16 <=delta <=100:
                     candidate.update({'matching_age': 10})
-                    # print('10%', candidate['first_name'], candidate)
             else:
-                print('Что-то из элса')
                 candidate.update({'matching_age': 0})
         return search_result
 
@@ -274,6 +261,7 @@ for candidate in all_filters_result:
 
 top_points = sorted(set(all_ratings_list))
 print('POINTS ==>', top_points)
+
 def get_users_photos(candidate):
     params = get_params()
     params['owner_id'] = candidate
@@ -283,19 +271,25 @@ def get_users_photos(candidate):
     URL = 'https://api.vk.com/method/photos.get'
     response = requests.get(URL, params)
     time.sleep(0.4)
-    # print(response.json())
-    user_top_profile_photos = {}
-    i=1
-    for item in response.json()['response']['items']:
-        # print('Likes amount ==>', item['likes']['count'], 'Link==>:', item['sizes'][-2]['url'])
-        user_top_profile_photos.update(
-            {f'photo{i}': {'likes_count': item['likes']['count']},
-                            'url': item['sizes'][-2]['url']
-             }
-        )
-        i+=1
-    return user_top_profile_photos
+    if response.json()['response']['count'] >3:
+        likes_counter = []
+        for item in response.json()['response']['items']:
+            likes_counter.append(item['likes']['count'])
+        top3_likes = list(reversed(sorted(likes_counter)))
+        # print(top3_likes[0:3])
+        many_photos_crop_list = []
+        for item in response.json()['response']['items']:
+            if item['likes']['count'] in top3_likes[0:3]:
+                photo = {'Likes': item['likes']['count'], 'Link': item['sizes'][-2]['url']}
+                many_photos_crop_list.append(photo)
+        return many_photos_crop_list
 
+    else:
+        user_top_profile_photos = []
+        for item in response.json()['response']['items']:
+            photo = {'Likes': item['likes']['count'], 'Link': item['sizes'][-2]['url']}
+            user_top_profile_photos.append(photo)
+        return user_top_profile_photos
 
 for candidate in all_filters_result:
     top_10_candidates = []
@@ -305,15 +299,15 @@ for candidate in all_filters_result:
         top_10_candidates.append(candidate)
         print(
             candidate['id'], candidate['first_name'], candidate['last_name'], candidate['bdate'], #candidate['country']['title'],
-            candidate['RATING'],
-            candidate['friendship_common'], candidate['friendship'],
-            candidate['matching_location'], candidate['matching_age'],
-            candidate['interest_common'], candidate['top_photos'])
+            candidate['RATING'], f"https://vk.com/{candidate['domain']}", candidate['top_photos'],
+            # candidate['friendship_common'], candidate['friendship'],
+            # candidate['matching_location'], candidate['matching_age'],
+            # candidate['interest_common']
+        )
         # except KeyError as e:
         #     print(e)
-pprint(top_10_candidates)
+
 
 
 ''' все полученные на данном этапе результаты упаковываем в базу'''
 
-# filter_top_10_results()
