@@ -30,7 +30,7 @@ class User:
     def __init__(self, token):
         self.token = token
 
-    def search_user_by_name(self, name):
+    def search_user_by_name(self, id):
         '''
 
         :param name: принимает имя строкой
@@ -38,33 +38,47 @@ class User:
                 И у кого указан год рождения
                 Я пока выбираю из него первого в списке search_result[0]
         '''
-        search_result = []
         params = get_params()
-        params['q'] = name
-        params['count'] = 50  # 999
-        params['has_photo'] = 1  # без фотки не выводятся
+        params['user_ids'] = id
         params['fields'] = 'sex, bdate, city, country, relation, first_name, last_name,' \
                            'interests,common_count, is_friend'
-        URL = 'https://api.vk.com/method/users.search'
+        URL = 'https://api.vk.com/method/users.get'
         response = requests.get(URL, params)
-        proper_status = '0156'  # Это статусы тех, кто открыто их объявил. Без указания статуса (None) исключены
-        # print(response.text)
-
-        for user in response.json()['response']['items']:
+        print(response.text)
+        for user in response.json()['response']:
             current_year = datetime.datetime.now()
-            if user.get('country'):
-                if user.get('city'):
-                    if str(user.get('relation')) in proper_status:
-                        if user.get('bdate'):
-                            if len(user.get('bdate').split('.')) == 3:
-                                user_bdate = user['bdate'].split('.')
-                                user_age = current_year.year - int(user_bdate[2])
-                                if user_age >= 18:
-                                    search_result.append(user)  # ['id'])
-        print(f'Подходящий статус у {len(search_result)} результатов поиска. Берем 1-го из них')
+            if user.get('country') is None:
+                country_name = str(input('Не указана страна! Укажите где живет пользователь!: '))
+                user.update({'country': {'id': '', 'title': country_name}})
+            if user.get('city') is None:
+                city_name = str(input('Не указан город! Укажите город, где живет пользователь!: '))
+                user.update({'city': {'id': '', 'title': city_name}})
+            if user.get('bdate') is None:
+                user_bdate = int(input("У пользователя не указан год рождения. Укажите год (в формате 0000): "))
+                user_age = current_year.year - user_bdate
+                user.update({'bdate': f'1.1.{user_bdate}'})
+                if user_age < 18:
+                    print("Этот человек еще несовершеннолетний. Конец поиска.")
+                    break
+            else:
+                if len(user.get('bdate').split('.')) == 3:
+                    user_bdate = user['bdate'].split('.')
+                    user_age = current_year.year - int(user_bdate[2])
+                    if user_age < 18:
+                        print("Этот человек еще несовершеннолетний. Конец поиска.")
+                        break
+
+                if len(user.get('bdate').split('.')) != 3:
+                    user_bdate = int(input("У пользователя не указан год рождения. Укажите год (в формате 0000): "))
+                    user_age = current_year.year - user_bdate
+                    user.update({'bdate': f'1.1.{user_bdate}'})
+                    if user_age < 18:
+                        print("Этот человек еще несовершеннолетний. Конец поиска.")
+                        break
+
         users_collection.delete_many({})
-        users_collection.insert_one(search_result[0])
-        return search_result[0]  # можно впринципе пройтись разок поиском и все итоги убрать в базу
+        users_collection.insert_one(user)
+        return user
 
 
     def relation_ready_global_user_search(self, search_query: str):
@@ -85,8 +99,6 @@ class User:
             params['has_photo'] = 1 # без фотки не выводятся
             params['fields'] = 'sex, bdate, city, country, relation, domain, first_name, last_name,' \
                            'interests, books, common_count, is_friend'
-
-
             URL = 'https://api.vk.com/method/users.search'
             response = requests.get(URL, params)
             time.sleep(0.4)
@@ -111,7 +123,6 @@ class Matching:
 
     def matching_sex(self, user, search_result):
         '''
-
         :param user: Указывает на пользователя которому ищем пару
         :param search_result: Указывает вывод результатов поиска по которому идет сравнение
         :return: список с юзерами пола противоположеному от искомого юзера
@@ -200,81 +211,29 @@ class Matching:
         return search_result
 
 
-if __name__ == '__main__':
-    target_user = User.search_user_by_name(token,'Наталья Маликова')
-    print(target_user)
-    # search_list = 'фываолдж'
-    search_list = 'абвгдежзиклмнопрстуфхцчшщэюяАБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ' \
-                  'abcdefghijklmnopqrstuvwxyzABCDEFJHIGKLMNOPQRSTUVWXYZ'
-    global_search_result = User.relation_ready_global_user_search(token, search_list)
-    print('Всего нашли ==>', len(global_search_result))
-    # print(global_search_result)
-    match = Matching()
-    filtered_sex = match.matching_sex(target_user, global_search_result)
-    print('Отобрали по полу ==>', len(filtered_sex))
-
-    filtered_age = match.matching_age_delta(target_user, filtered_sex)
-    print('Отранжировали по возрасту ==>')
-    matched_location = match.matching_location(target_user, filtered_age)
-    print('Отранжировали по локации ==>')
-    friendship_relavity = match.friendship_relations(target_user, matched_location)
-    print('Отранжировали по друзьям ==>')
-    interest_matching = match.interests_intersection(target_user, friendship_relavity)
-    print('Отранжировали по интересам ==>')
-
-    all_filters_result = interest_matching
-
-    all_ratings_list = []
-    for candidate in all_filters_result:
-        rating = candidate['friendship_common'] + candidate['friendship'] + \
-                 candidate['matching_location'] + candidate['matching_age'] + \
-                 candidate['interest_common']
-        candidate.update({'RATING': rating})
-        all_ratings_list.append(rating)
-
-    top_points = sorted(set(all_ratings_list))
-    print('POINTS ==>', top_points)
-
-    def get_users_photos(candidate):
-        params = get_params()
-        params['owner_id'] = candidate
-        params['album_id'] = 'profile'
-        params['extended'] = 1
-        params['photo_sizes'] = 1
-        URL = 'https://api.vk.com/method/photos.get'
-        response = requests.get(URL, params)
-        time.sleep(0.4)
-        print('Получаем фотки лучиших профилей ==>')
-        if response.json()['response']['count'] >3:
-            likes_counter = []
-            for item in response.json()['response']['items']:
-                likes_counter.append(item['likes']['count'])
-            top3_likes = list(reversed(sorted(likes_counter)))
-            many_photos_crop_list = []
-            for item in response.json()['response']['items']:
-                if item['likes']['count'] in top3_likes[0:3]:
-                    photo = {'Likes': item['likes']['count'], 'Link': item['sizes'][-2]['url']}
-                    many_photos_crop_list.append(photo)
-            return many_photos_crop_list
-        else:
-            user_top_profile_photos = []
-            for item in response.json()['response']['items']:
+def get_users_photos(candidate):
+    params = get_params()
+    params['owner_id'] = candidate
+    params['album_id'] = 'profile'
+    params['extended'] = 1
+    params['photo_sizes'] = 1
+    URL = 'https://api.vk.com/method/photos.get'
+    response = requests.get(URL, params)
+    time.sleep(0.4)
+    if response.json()['response']['count'] >3:
+        likes_counter = []
+        for item in response.json()['response']['items']:
+            likes_counter.append(item['likes']['count'])
+        top3_likes = list(reversed(sorted(likes_counter)))
+        many_photos_crop_list = []
+        for item in response.json()['response']['items']:
+            if item['likes']['count'] in top3_likes[0:3]:
                 photo = {'Likes': item['likes']['count'], 'Link': item['sizes'][-2]['url']}
-                user_top_profile_photos.append(photo)
-            return user_top_profile_photos
-
-
-    top_rated_users = []
-    i=1
-    for candidate in all_filters_result:
-        if candidate['RATING'] >= top_points[-4]:
-            candidate.update({'top_photos': get_users_photos(candidate['id'])})
-            candidate.update({'VK_link': f"https://vk.com/{candidate['domain']}"})
-            candidate.update({'list_nidex': i})
-            top_rated_users.append(candidate)
-            i+=1
-    candidates_collection.delete_many({})
-    candidates_collection.insert_many(top_rated_users)
-
-
-
+                many_photos_crop_list.append(photo)
+        return many_photos_crop_list
+    else:
+        user_top_profile_photos = []
+        for item in response.json()['response']['items']:
+            photo = {'Likes': item['likes']['count'], 'Link': item['sizes'][-2]['url']}
+            user_top_profile_photos.append(photo)
+        return user_top_profile_photos
