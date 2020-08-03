@@ -1,29 +1,21 @@
-from sqlalchemy import create_engine, Column, Integer, String, Date
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from Vkinter import candidates_collection, users_collection
+import json
 
-Base = declarative_base()
-engine = create_engine("postgres://postgres@/VKinterdb")
-Session = sessionmaker(bind=engine)
-session = Session()
+# for user in users_collection.find():
+#     print(user)
 
-class Allopenedusers(Base):
-    __tablename__ = 'allopenedusers'
+top10_list =[]
+for candidate in candidates_collection.find({'list_nidex': {'$lte': 10}}):
+    selection = {
+        'id': candidate['id'],
+        'first_name': candidate['first_name'],
+        'last_name': candidate['last_name'],
+        'VK_page': candidate['VK_link'],
+        'top_photos': candidate['top_photos']
+    }
+    top10_list.append(selection)
+    # cursor = {}
+    # print(candidate)
+with open('candidates.json', 'w') as fi:
+    json.dump(top10_list, fi, ensure_ascii=False, indent=4)
 
-    id = Column(Integer, primary_key=True)
-    sex = Column(Integer, nullable=False)
-    bdate = Column(Date) # ПОЧИТАТЬ КАК ДАТУ ПЕРЕДАТЬ ПРАВИЛЬНО
-    city = Column(JSONB, nullable=True)
-    country = Column(JSONB, nullable=True)
-    verified = Column(Integer)
-    first_name = Column(String(20))
-    last_name = Column(String(20))
-    nickname = Column(String(30))
-    occupation = Column(JSONB, nullable=True)
-    interests = Column(String(300))
-    books  = Column(String(100))
-    activities = Column(String(300))
-    has_photo = Column(Integer, nullable=False)
-    common_count = Column(Integer, nullable=False)
-    is_friend = Column(Integer, nullable=False)
