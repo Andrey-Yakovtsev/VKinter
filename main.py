@@ -97,7 +97,7 @@ class User:
         for symbol in search_query:
             params = get_params()
             params['q'] = symbol
-            params['count'] = 100 #999
+            params['count'] = 999 #999
             params['has_photo'] = 1 # без фотки не выводятся
             params['fields'] = 'sex, bdate, city, country, relation, verified, first_name, last_name,  nickname, occupation,' \
                            'interests, books, activities' \
@@ -246,7 +246,8 @@ class Matching:
 
 target_user = User.search_user_by_name(token,'Наталья Маликова')
 print(target_user)
-search_list = 'фываолдж'
+# search_list = 'фываолдж'
+search_list = 'абвгдежзиклмнопрстуф'
 global_search_result = User.relation_ready_global_user_search(token, search_list)
 print('Всего нашли ==>', len(global_search_result))
 # print(global_search_result)
@@ -255,42 +256,63 @@ filtered_sex = match.matching_sex(target_user, global_search_result)
 print('Отобрали по полу ==>', len(filtered_sex))
 
 filtered_age = match.matching_age_delta(target_user, filtered_sex)
-# print(filtered_age)
-
 matched_location = match.matching_location(target_user, filtered_age)
-# print(matched_location)
-
 friendship_relavity = match.friendship_relations(target_user, matched_location)
-# print(friendship_relavity)
-
 interest_matching = match.interests_intersection(target_user, friendship_relavity)
-print(interest_matching)
 
 all_filters_result = interest_matching
-#
-# # def filter_top_10_results():
+
+
+
 all_ratings_list = []
 for candidate in all_filters_result:
     rating = candidate['friendship_common'] + candidate['friendship'] + \
-             candidate['matching_location'] + candidate['matching_age']
+             candidate['matching_location'] + candidate['matching_age'] + \
+             candidate['interest_common']
     candidate.update({'RATING': rating})
     all_ratings_list.append(rating)
 
-top_points = max(set(all_ratings_list))
+top_points = sorted(set(all_ratings_list))
+print('POINTS ==>', top_points)
+def get_users_photos(candidate):
+    params = get_params()
+    params['owner_id'] = candidate
+    params['album_id'] = 'profile'
+    params['extended'] = 1
+    params['photo_sizes'] = 1
+    URL = 'https://api.vk.com/method/photos.get'
+    response = requests.get(URL, params)
+    time.sleep(0.4)
+    # print(response.json())
+    user_top_profile_photos = {}
+    i=1
+    for item in response.json()['response']['items']:
+        # print('Likes amount ==>', item['likes']['count'], 'Link==>:', item['sizes'][-2]['url'])
+        user_top_profile_photos.update(
+            {f'photo{i}': {'likes_count': item['likes']['count']},
+                            'url': item['sizes'][-2]['url']
+             }
+        )
+        i+=1
+    return user_top_profile_photos
+
 
 for candidate in all_filters_result:
-    if candidate['RATING'] == top_points:
-        try:
-            print(
-                candidate['id'], candidate['first_name'], candidate['last_name'], candidate['bdate'], #candidate['country']['title'],
-                candidate['RATING'],
-                candidate['friendship_common'], candidate['friendship'],
-                candidate['matching_location'], candidate['matching_age'])
-        except KeyError as e:
-            print(e)
+    top_10_candidates = []
+    if candidate['RATING'] >= top_points[-4]:
+        # try:
+        candidate.update({'top_photos': get_users_photos(candidate['id'])})
+        top_10_candidates.append(candidate)
+        print(
+            candidate['id'], candidate['first_name'], candidate['last_name'], candidate['bdate'], #candidate['country']['title'],
+            candidate['RATING'],
+            candidate['friendship_common'], candidate['friendship'],
+            candidate['matching_location'], candidate['matching_age'],
+            candidate['interest_common'], candidate['top_photos'])
+        # except KeyError as e:
+        #     print(e)
+pprint(top_10_candidates)
 
-
-''' Получаем для ТОП-списка фотографии...'''
 
 ''' все полученные на данном этапе результаты упаковываем в базу'''
 
