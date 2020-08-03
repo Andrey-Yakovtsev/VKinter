@@ -119,16 +119,15 @@ class User:
         return mega_search_result #можно впринципе пройтись разок поиском и все итоги убрать в базу
 
 '''
-30/07 - итоги. Поиск в цикле по алфавиту все возвращает.
-Надо докинуть нужных условий в запрос (3 фото, активности и увлечения и что там еще в требованиях)
+31/07 - итоги. Поиск собирает что надо.
+Проблема только с выводом рейтингов по локейшнам. Надо проверить и поправить.
+Осталось отобраьт ТОП-10 из получаемого списка и собрать для них ТОП-3 фото
 """(У тех людей, которые подошли по требованиям пользователю, получать топ-3 популярных фотографии с аватара. 
 Популярность определяется по количеству лайков и комментариев.)""""
 
-Подобрать базу (СКулайт?).
+Возня с БАЗОЙ. Что икак туда заливать и зачем?
 Продумать таблички
 Попробовать загрузку...
-
-!!!! Прежде чем в базу запиливать, доделать вывод на 20-30 результатах, чтобы потом структуру базы правильно подобрать
 '''
 
 
@@ -227,6 +226,7 @@ class Matching:
                 user_interest_lookup_list.append(item[:4])
         for candidate in search_result:
             if candidate.get('interests'):
+                # print(candidate.get('interests'))
                 candidate_interest_lookup_list = []
                 candidate_interests = candidate['interests'].split(', ')
                 for item in candidate_interests:
@@ -244,7 +244,7 @@ class Matching:
 
 
 
-target_user = User.search_user_by_name(token,'Фриске')
+target_user = User.search_user_by_name(token,'Наталья Маликова')
 print(target_user)
 search_list = 'фываолдж'
 global_search_result = User.relation_ready_global_user_search(token, search_list)
@@ -282,11 +282,16 @@ for candidate in all_filters_result:
     if candidate['RATING'] == top_points:
         try:
             print(
-                candidate['id'], candidate['first_name'], candidate['bdate'], candidate['country']['title'],
+                candidate['id'], candidate['first_name'], candidate['last_name'], candidate['bdate'], #candidate['country']['title'],
                 candidate['RATING'],
                 candidate['friendship_common'], candidate['friendship'],
                 candidate['matching_location'], candidate['matching_age'])
         except KeyError as e:
             print(e)
+
+
+''' Получаем для ТОП-списка фотографии...'''
+
+''' все полученные на данном этапе результаты упаковываем в базу'''
 
 # filter_top_10_results()
