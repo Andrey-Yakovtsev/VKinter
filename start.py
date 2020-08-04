@@ -39,11 +39,11 @@ if __name__ == '__main__':
         all_ratings_list.append(rating)
 
     top_points = sorted(set(all_ratings_list))
-    print('POINTS ==>', top_points)
+    print(f'Всего нашли {len(filtered_sex)} кандидатов с рейтингом  от {top_points[0]} до ==>{top_points[-1]}')
 
     top_rated_users = []
     i=1
-    print('Получаем фотки лучших профилей ==>')
+    print(f'Получаем фотки лучших профилей с рейтингом {top_points[-1]} и {top_points[-2]} ==>')
     for candidate in all_filters_result:
         if candidate['RATING'] >= top_points[-2]:
             candidate.update({'top_photos': get_users_photos(candidate['id'])})

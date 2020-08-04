@@ -104,7 +104,7 @@ class User:
             URL = 'https://api.vk.com/method/users.search'
             response = requests.get(URL, params)
             time.sleep(0.4)
-            print('Запрос:==>', i)
+            print(f'Запрос:==> {i} из {len(search_query)}')
             i+=1
             proper_status = '0156' # Это статусы тех, кто открыто их объявил. Без указания статуса (None) исключены
             for user in response.json()['response']['items']:
