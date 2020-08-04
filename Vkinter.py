@@ -30,7 +30,9 @@ class User:
     def __init__(self, token):
         self.token = token
 
-    def search_user_by_name(self, id):
+    def search_user(self, id):
+
+
         '''
 
         :param name: принимает имя строкой

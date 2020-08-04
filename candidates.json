@@ -1,39 +1,5 @@
 [
     {
-        "RATING": 170,
-        "id": 153123940,
-        "first_name": "Оксана",
-        "last_name": "Ф.",
-        "VK_page": "https://vk.com/fedykoks",
-        "top_photos": [
-            {
-                "Likes": 16,
-                "Link": "https://sun9-28.userapi.com/c5462/u153123940/146456666/z_e6694a42.jpg"
-            },
-            {
-                "Likes": 19,
-                "Link": "https://sun9-28.userapi.com/c5779/u153123940/-6/z_fe01f059.jpg"
-            },
-            {
-                "Likes": 41,
-                "Link": "https://sun1-88.userapi.com/5rYc1lbhc8JfNi4qbq1suY1eDwPiO6ieGQ2yvw/pWK2R8dqJu8.jpg"
-            }
-        ]
-    },
-    {
-        "RATING": 200,
-        "id": 85254038,
-        "first_name": "Аленка",
-        "last_name": "Ф",
-        "VK_page": "https://vk.com/id85254038",
-        "top_photos": [
-            {
-                "Likes": 16,
-                "Link": "https://sun9-63.userapi.com/c10200/u85254038/-6/m_b055929b.jpg"
-            }
-        ]
-    },
-    {
         "RATING": 200,
         "id": 188835968,
         "first_name": "София",
@@ -54,7 +20,7 @@
         "VK_page": "https://vk.com/id300203929",
         "top_photos": [
             {
-                "Likes": 198,
+                "Likes": 199,
                 "Link": "https://sun9-76.userapi.com/c624616/v624616929/23d16/E6aVbVNyQa4.jpg"
             }
         ]
@@ -86,61 +52,44 @@
         ]
     },
     {
-        "RATING": 200,
-        "id": 434208881,
-        "first_name": "Кей",
-        "last_name": "О'коннор",
-        "VK_page": "https://vk.com/id434208881",
+        "RATING": 170,
+        "id": 2080146,
+        "first_name": "Яночка",
+        "last_name": "Г-Ян",
+        "VK_page": "https://vk.com/g.yanaromanovna",
         "top_photos": [
             {
-                "Likes": 0,
-                "Link": "https://sun9-62.userapi.com/c836726/v836726881/45913/OUZqUNGA9bw.jpg"
+                "Likes": 132,
+                "Link": "https://sun1-84.userapi.com/S7_pgs1Pw7uAn6xQ0yoVUayXqHkNtjhDmsAfAw/Jk3FdrCYFAY.jpg"
             },
             {
-                "Likes": 1,
-                "Link": "https://sun9-66.userapi.com/c836726/v836726881/459f0/-X7GW7AvlUs.jpg"
+                "Likes": 124,
+                "Link": "https://sun1-86.userapi.com/ZU_-sdwvDxBgZPkLXf2cOOP5FSoN5icnKB5TRg/rTiKxYpKP7o.jpg"
+            },
+            {
+                "Likes": 135,
+                "Link": "https://sun9-24.userapi.com/c622517/v622517146/120eb/wRRCgOcwKkU.jpg"
             }
         ]
     },
     {
         "RATING": 200,
-        "id": 19043457,
-        "first_name": "Динара",
-        "last_name": "Л.",
-        "VK_page": "https://vk.com/id19043457",
+        "id": 242004945,
+        "first_name": "Гүлфайруз",
+        "last_name": "Қоймағанбетова",
+        "VK_page": "https://vk.com/id242004945",
         "top_photos": [
             {
-                "Likes": 36,
-                "Link": "https://sun1-91.userapi.com/TC5yI3cLNKtJBBCG-XaEfDcHQ0U2zUfPu45pbQ/UE7vvZtSpME.jpg"
+                "Likes": 147,
+                "Link": "https://sun9-16.userapi.com/c625727/v625727945/4c6db/rkMaXb-YWeE.jpg"
             },
             {
-                "Likes": 71,
-                "Link": "https://sun1-29.userapi.com/eulwuhyATExRKDXmmyhOq_sNYNpFp0BocVPO1Q/5bXqClp4_Ik.jpg"
+                "Likes": 239,
+                "Link": "https://sun9-18.userapi.com/c604331/v604331945/37a1/-Oa8G_ok6Ts.jpg"
             },
             {
-                "Likes": 50,
-                "Link": "https://sun9-13.userapi.com/c837524/v837524457/28725/ssmtp8M_qmU.jpg"
-            }
-        ]
-    },
-    {
-        "RATING": 200,
-        "id": 459557468,
-        "first_name": "Банан",
-        "last_name": "Л-Ди",
-        "VK_page": "https://vk.com/id459557468",
-        "top_photos": [
-            {
-                "Likes": 6,
-                "Link": "https://sun9-56.userapi.com/c841525/v841525946/40b63/P7DPtT6EcJg.jpg"
-            },
-            {
-                "Likes": 6,
-                "Link": "https://sun9-12.userapi.com/c841321/v841321676/46923/pyWLdlgxLoE.jpg"
-            },
-            {
-                "Likes": 7,
-                "Link": "https://sun9-56.userapi.com/c841426/v841426422/6b972/pd_w_3rZOMA.jpg"
+                "Likes": 195,
+                "Link": "https://sun9-64.userapi.com/c626930/v626930945/128dc/HPMAHiquqLM.jpg"
             }
         ]
     },
@@ -162,6 +111,65 @@
             {
                 "Likes": 66,
                 "Link": "https://sun9-12.userapi.com/c628129/v628129570/62238/MI1YDSAY4_I.jpg"
+            }
+        ]
+    },
+    {
+        "RATING": 170,
+        "id": 250121696,
+        "first_name": "Ласковый",
+        "last_name": "Яд",
+        "VK_page": "https://vk.com/id250121696",
+        "top_photos": [
+            {
+                "Likes": 1,
+                "Link": "https://sun1-84.userapi.com/AnWgbvYAHKwcZdRtrLv9pFv3UuFiOydtgyvCKg/EGPhyn-JB3Q.jpg"
+            },
+            {
+                "Likes": 7,
+                "Link": "https://sun1-98.userapi.com/BZrjUho65OfajyjwLBYzrzk2rWSCsDJf5g-zqQ/MJPK7QxEk28.jpg"
+            }
+        ]
+    },
+    {
+        "RATING": 200,
+        "id": 63094776,
+        "first_name": "Мария",
+        "last_name": "д'Анна",
+        "VK_page": "https://vk.com/id63094776",
+        "top_photos": [
+            {
+                "Likes": 86,
+                "Link": "https://sun9-9.userapi.com/c637328/v637328776/4a956/LfrIqTLDe-o.jpg"
+            },
+            {
+                "Likes": 85,
+                "Link": "https://sun9-47.userapi.com/c841522/v841522776/3b92/3dk1hycEcpQ.jpg"
+            },
+            {
+                "Likes": 90,
+                "Link": "https://sun9-24.userapi.com/c834100/v834100146/5a6ba/mU7E2Sz-kws.jpg"
+            }
+        ]
+    },
+    {
+        "RATING": 200,
+        "id": 6848240,
+        "first_name": "Алена",
+        "last_name": "Е",
+        "VK_page": "https://vk.com/alena_wbnc",
+        "top_photos": [
+            {
+                "Likes": 117,
+                "Link": "https://sun9-18.userapi.com/c301408/u6848240/-6/z_5a9c13c7.jpg"
+            },
+            {
+                "Likes": 83,
+                "Link": "https://sun9-76.userapi.com/c308531/v308531240/3cf3/XM3gS8jbJ8I.jpg"
+            },
+            {
+                "Likes": 106,
+                "Link": "https://sun9-43.userapi.com/c624619/v624619240/78c1/P-nXxTtzswM.jpg"
             }
         ]
     }

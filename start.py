@@ -6,12 +6,13 @@ import json
 if __name__ == '__main__':
 
     get_user = str(input('Введите ID или Screenname пользователя для которого будем искать пару: '))
-    target_user = User.search_user_by_name(token, get_user)
-    print(target_user)
-    search_list = 'фываолдж'
+    trg_user = User(token)
+    target_user = trg_user.search_user(get_user)
+
+    search_list = "абвгдежзиклмнопрстуфхцчшщэюя" #'фываолдж'
     # search_list = 'абвгдежзиклмнопрстуфхцчшщэюяАБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ' \
     #               'abcdefghijklmnopqrstuvwxyzABCDEFJHIGKLMNOPQRSTUVWXYZ'
-    global_search_result = User.relation_ready_global_user_search(token, search_list)
+    global_search_result = trg_user.relation_ready_global_user_search(search_list)
     print('Всего нашли ==>', len(global_search_result))
 
     match = Matching()
@@ -75,10 +76,10 @@ if __name__ == '__main__':
         json.dump(top10_list, fi, ensure_ascii=False, indent=4)
 
 '''
-задачи на 04 авг:
-1. Выпилить ТОКЕН
-1.5 - разобраться с неповторяющимся выводом
+Осталось:
+1. написать тесты.
+
+Украшалки:
 2. подтянуть БД городов и стран для проверки ввода пользователем.
-4. написать тесты.
 3. подтянуть прогрессбар...
 '''
