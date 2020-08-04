@@ -105,14 +105,12 @@ class User:
             print('Запрос:==>', i)
             i+=1
             proper_status = '0156' # Это статусы тех, кто открыто их объявил. Без указания статуса (None) исключены
-            # print(response.text) # тут упоминается 241 млн записей: {"response":{"count":241720908,"items":...
             for user in response.json()['response']['items']:
                 if str(user.get('relation')) in proper_status:
                     if user.get('bdate'):
                         if len(user.get('bdate').split('.')) == 3:
-                            mega_search_result.append(user) #['id'])
-        # print('Подходящий статус у ids==>', len(mega_search_result), mega_search_result) #, results_list)
-        return mega_search_result #можно впринципе пройтись разок поиском и все итоги убрать в базу
+                            mega_search_result.append(user)
+        return mega_search_result
 
 
 class Matching:
@@ -237,3 +235,9 @@ def get_users_photos(candidate):
             photo = {'Likes': item['likes']['count'], 'Link': item['sizes'][-2]['url']}
             user_top_profile_photos.append(photo)
         return user_top_profile_photos
+
+def get_countries_list():
+    pass
+
+def get_cities_list():
+    pass
