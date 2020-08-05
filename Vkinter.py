@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 import requests
+import json
 import datetime, time
 
 
@@ -59,6 +60,7 @@ class User:
                 user_bdate = int(input("У пользователя не указан год рождения. Укажите год (в формате 0000): "))
                 user_age = current_year.year - user_bdate
                 user.update({'bdate': f'1.1.{user_bdate}'})
+                user.update({'age': user_age})
                 if user_age < 18:
                     print("Этот человек еще несовершеннолетний. Конец поиска.")
                     break
@@ -82,29 +84,47 @@ class User:
         users_collection.insert_one(user)
         return user
 
+    def extract_user_age(self):
+        for user in users_collection.find():
+            u_age = user['age']
+        return u_age
 
-    def relation_ready_global_user_search(self, search_query: str):
+    def extract_user_contr_sex(self):
+        for user in users_collection.find():
+            u_sex = user['sex']
+            if u_sex == 1:
+                return 2
+            if u_sex == 2:
+                return 1
+
+    def relation_ready_global_user_search(self):
         '''
-
         :param search_query: принимает строку символов (весь русский и латинский алфавит и цифры)
                             идет по каждому символу в цикле.
-                            NB!!! Не забыть поменять параметр ['count'] на 999
-
-        :return: выводит список "готовых к отношениям" и с указанным годом рождения
+        :return: выводит список "готовых к отношениям" и с указанным годом рождения в диапазоне ОТ ДО
         '''
+        user_age = self.extract_user_age()
         mega_search_result = []
         i=1
-        for symbol in search_query:
+        search_list = 'фываолдж'
+        # search_list = "абвгдежзиклмнопрстуфхцчшщэюя"
+        # search_list = 'абвгдежзиклмнопрстуфхцчшщэюяАБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ' \
+        #               'abcdefghijklmnopqrstuvwxyzABCDEFJHIGKLMNOPQRSTUVWXYZ'
+
+        for symbol in search_list:
             params = get_params()
             params['q'] = symbol
             params['count'] = 999 #999
+            params['sex'] = self.extract_user_contr_sex()
+            params['age_from'] = 18
+            params['age_to'] = 50
             params['has_photo'] = 1 # без фотки не выводятся
             params['fields'] = 'sex, bdate, city, country, relation, domain, first_name, last_name,' \
                            'interests, books, common_count, is_friend'
             URL = 'https://api.vk.com/method/users.search'
             response = requests.get(URL, params)
             time.sleep(0.4)
-            print(f'Запрос:==> {i} из {len(search_query)}')
+            print(f'Запрос:==> {i} из {len(search_list)}')
             i+=1
             proper_status = '0156' # Это статусы тех, кто открыто их объявил. Без указания статуса (None) исключены
             for user in response.json()['response']['items']:
@@ -112,6 +132,7 @@ class User:
                     if user.get('bdate'):
                         if len(user.get('bdate').split('.')) == 3:
                             mega_search_result.append(user)
+        print('Всего нашли ==>', len(mega_search_result))
         return mega_search_result
 
 
@@ -120,19 +141,6 @@ class Matching:
     функции проверки параметров соответствия юзеров из полученной базы нашему юзеру
     Получают на вход юзера, выдают рейтинги соответствия каждого юзера выбранному
     '''
-
-    def matching_sex(self, user, search_result):
-        '''
-        :param user: Указывает на пользователя которому ищем пару
-        :param search_result: Указывает вывод результатов поиска по которому идет сравнение
-        :return: список с юзерами пола противоположеному от искомого юзера
-        '''
-        user_sex = user['sex']
-        sex_appropriate_candidates = []
-        for candidate in search_result:
-            if candidate['sex'] != user_sex: #выборка оп полу
-                sex_appropriate_candidates.append(candidate)
-        return sex_appropriate_candidates
 
     def matching_age_delta(self, user, search_result):
         user_bdate = user['bdate'].split('.')
@@ -152,6 +160,7 @@ class Matching:
                     candidate.update({'matching_age': 10})
             else:
                 candidate.update({'matching_age': 0})
+        print('Отранжировали по возрасту ==>')
         return search_result
 
     def matching_location(self, user, search_result):
@@ -171,6 +180,7 @@ class Matching:
                         candidate.update({'matching_location': 30})
             else:
                 candidate.update({'matching_location': 30})
+        print('Отранжировали по локации ==>')
         return search_result
 
     def friendship_relations(self, user, search_result):
@@ -185,6 +195,7 @@ class Matching:
                 candidate.update({'friendship_common': 0})
             else:
                 candidate.update({'friendship_common': 0})
+        print('Отранжировали по друзьям ==>')
         return search_result
 
     def interests_intersection(self, user, search_result):
@@ -207,7 +218,7 @@ class Matching:
                     candidate.update({'interest_common': 0})
             else:
                 candidate.update({'interest_common': 0})
-
+        print('Отранжировали по интересам ==>')
         return search_result
 
 
@@ -237,6 +248,50 @@ def get_users_photos(candidate):
             photo = {'Likes': item['likes']['count'], 'Link': item['sizes'][-2]['url']}
             user_top_profile_photos.append(photo)
         return user_top_profile_photos
+
+def show_me_hi_rated(all_filters_result):
+    all_ratings_list = []
+    for candidate in all_filters_result:
+        rating = candidate['friendship_common'] + candidate['friendship'] + \
+                 candidate['matching_location'] + candidate['interest_common'] + \
+                 candidate['matching_age']
+        candidate.update({'RATING': rating})
+        all_ratings_list.append(rating)
+    top_points = sorted(set(all_ratings_list))
+    print(f'Всего в рейтинге баллов от {top_points[0]} до ==>{top_points[-1]}')
+    top_rated_users = []
+    i = 1
+    print(f'Получаем фотки лучших профилей с рейтингом {top_points[-1]} и {top_points[-2]} ==>')
+    for index, candidate in enumerate(all_filters_result):
+        if candidate['RATING'] >= top_points[-2]:
+            candidate.update({'top_photos': get_users_photos(candidate['id'])})
+            candidate.update({'VK_link': f"https://vk.com/{candidate['domain']}"})
+            candidate.update({'list_index': i})
+            top_rated_users.append(candidate)
+            i += 1
+    candidates_collection.delete_many({})
+    candidates_collection.insert_many(top_rated_users)
+
+    return top_rated_users
+
+def show_me_top_10():
+    top10_list =[]
+    for candidate in candidates_collection.find({'list_index': {'$lte': 10}}):
+        selection = {
+            'RATING': candidate['RATING'],
+            'id': candidate['id'],
+            'first_name': candidate['first_name'],
+            'last_name': candidate['last_name'],
+            'VK_page': candidate['VK_link'],
+            'top_photos': candidate['top_photos']
+        }
+        top10_list.append(selection)
+
+    return top10_list
+
+def do_me_a_json():
+    with open('candidates.json', 'w') as fi:
+        json.dump(show_me_top_10(), fi, ensure_ascii=False, indent=4)
 
 def get_countries_list():
     pass
